@@ -8,14 +8,14 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Feature units `01-design-system` and `02-editor` are complete.
+- Feature units `01-design-system`, `02-editor`, and `03-auth` are complete.
 - Begin the next approved unit only after its scope is defined; editor canvas behavior and concrete
   dialog flows are intentionally outside the completed `02-editor` unit.
 
 ## Completed
 
 - Boilerplate cleanup: `app/globals.css` reduced to the Tailwind import, default SVGs
-  removed from `public/`, `app/page.tsx` replaced with a minimal `Ghost AI` component,
+  removed from `public/`, `app/page.tsx` replaced with a minimal `System Builder` component,
   and the app shell centered.
 - Dark-only token layer + Geist typography (`app/globals.css`, `app/layout.tsx`), documented in
   `context/ui-context.md` § Token Mapping and verified through a production build
@@ -33,7 +33,7 @@ Update this file whenever the current phase, active feature, or implementation s
   - `lucide-react` installed (icons per `ui-context.md` § Icons).
   - `cn()` helper: `lib/utils.ts` re-exports it from the `cn` package (twMerge + clsx semantics).
   - `app/globals.css` reconciled with the unit 01 token layer: shadcn semantic tokens declared on
-    `:root` and mapped onto Ghost AI tokens, the CLI's light `:root` values and inert `.dark` block
+    `:root` and mapped onto System Builder tokens, the CLI's light `:root` values and inert `.dark` block
     removed, the `dark:` variant re-scoped to the document, and two CLI-introduced defects fixed
     (see Architecture Decisions).
   - Verified end to end: `npm run build` compiles and type-checks, `npm run lint` is clean, all seven
@@ -63,10 +63,25 @@ Update this file whenever the current phase, active feature, or implementation s
     Checks covered initial layout, toggle icon and ARIA changes, inertness, non-reflowing overlay
     geometry, tab switching, both close paths, and absence of browser runtime errors. All temporary
     routes and verification scripts were removed.
+  - Feature unit `03-auth` — Clerk authentication and route protection, per
+    `context/feature-specs/03-auth.md`:
+    - Added the Clerk UI dependency and wrapped the root layout with `ClerkProvider`, using Clerk's
+      dark theme and the app's CSS token variables for appearance overrides.
+    - Added minimal responsive sign-in and sign-up pages with a desktop product panel and centered
+      Clerk forms; the product panel is hidden on small screens.
+    - Added protected-first `proxy.ts` using the configured Clerk sign-in/sign-up route variables,
+      with `/` and auth routes public and all other routes protected by default.
+    - Moved the editor shell to `/editor`; `/` now redirects authenticated users to the editor and
+      unauthenticated users to `/sign-in`.
+    - Added Clerk's built-in `UserButton` to the editor navbar without replacing its default profile
+      or logout flows.
+    - Refined the auth visual system with a warm amber-to-black panel, a stronger `System Builder`
+      display heading, and neutral Clerk controls while leaving the right-side form behavior intact.
+    - Verification: `npm run lint`, `npm run build`, and a live browser render check pass.
 
 ## In Progress
 
-- Nothing. Feature units `01-design-system` and `02-editor` are closed.
+- Nothing. Feature units `01-design-system`, `02-editor`, and `03-auth` are closed.
 
 ## Next Up
 
@@ -81,7 +96,7 @@ Update this file whenever the current phase, active feature, or implementation s
   (component-specific tokens). Re-verify the tokens after any CLI run: dark values on `:root`, no
   `.dark` block, no circular `--font-sans: var(--font-sans)`.
 - `components.json` records `style: "radix-nova"` and `baseColor: "neutral"` from the CLI preset. The
-  base color is inert because every shadcn token is overridden with a Ghost AI value. Confirm the
+  base color is inert because every shadcn token is overridden with a System Builder value. Confirm the
   `radix` component library (rather than the newer `base`/`aria` options) is intended.
 - `--chart-*` and `--sidebar-*` tokens were mapped onto the existing palette although no Chart or
   generated shadcn Sidebar component is installed. The feature-specific project sidebar does not
@@ -89,8 +104,8 @@ Update this file whenever the current phase, active feature, or implementation s
   their scope is defined?
 - `README.md` still contains unresolved git conflict markers from the "Merge local project with
   GitHub repository" commit (`<<<<<<< HEAD`, `=======`, `>>>>>>> cee925b`). The two sides disagree
-  on the product name (Next.js boilerplate text vs. `SystemDesignBuilder`), which conflicts with
-  `context/project-overview.md` (Ghost AI). Needs a naming decision before it can be resolved.
+  on the product name (Next.js boilerplate text vs. `SystemDesignBuilder`); the product is now
+  named `System Builder` in the app and project overview.
 - Confirm the token utility naming bridge documented in `ui-context.md` § Token Mapping
   (`--text-primary` -> `text-copy-primary`), now that a third family of shadcn/ui semantic tokens
   also exists.
@@ -121,7 +136,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Unit order: design system / component library first, then the editor workspace
   (`ui-context.md` § Component Library designates shadcn/ui as the library later units build on).
 - shadcn/ui semantic tokens are declared once on `:root` in `globals.css` and each resolves to a
-  Ghost AI token. The palette stays single-source and the generated components match the theme
+  System Builder token. The palette stays single-source and the generated components match the theme
   without being modified.
 - Dark only, enforced through tokens instead of a theme provider: `:root` holds the dark values, the
   `.dark` block the CLI generated was deleted, and `@custom-variant dark (&:where(html, html *))`
@@ -150,16 +165,20 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
-- Repository state: branch `main`, HEAD `519509c` "Merge local project with GitHub repository". The
-  working tree contains the unit 01 foundation (`components.json`, `components/ui`, `lib`,
-  dependency and token changes) and the new unit 02 files in `components/editor`.
-- `app/page.tsx` no longer contains the local `click me` test placeholder; it now mounts the editor
-  shell. `context/feature-specs/02-editor.md` and the new `components/editor/*` files are currently
-  untracked and will need to be included when the work is committed.
+- Repository state: branch `main`, with the unit 01 foundation, unit 02 editor chrome, and unit 03
+  Clerk auth changes in the working tree.
+- `app/page.tsx` redirects based on Clerk auth state; the editor shell is mounted at `/editor`.
+  `proxy.ts` protects all other routes while leaving `/`, sign-in, and sign-up public.
+- The auth page uses the final warm gradient treatment from the visual reference: amber/orange
+  highlights fade through deep brown into black, with Geist typography and the product name as the
+  largest left-panel element.
+- `@clerk/ui` is installed for the exported dark appearance theme. Local Clerk configuration uses
+  the existing `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` variables; optional
+  standard sign-in/sign-up route variables fall back to `/sign-in` and `/sign-up`.
 - Temporary editor verification routes and scripts were removed after the unit passed production
   build, ESLint, server-rendered HTML/CSS checks, and headless-browser interaction checks.
 - Tooling: Next.js 16.3.6 (Turbopack), Tailwind CSS v4.3.3, React 19.2.8, `shadcn` CLI 4.21.0,
-  `radix-ui` 1.6.7, `lucide-react` 1.48.0, `cn` 0.4.0.
+  `radix-ui` 1.6.7, `lucide-react` 1.48.0, `cn` 0.4.0, and `@clerk/ui` 1.34.0.
 - `shadcn init` prompts interactively for a preset; it was driven non-interactively by piping an
   empty line to accept the default. Without input the CLI hangs indefinitely.
 - `context/feature-specs/01-design-system.md` was filled in after unit 01 was first drafted and

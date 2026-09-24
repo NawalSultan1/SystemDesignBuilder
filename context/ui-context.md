@@ -64,7 +64,7 @@ Notes:
 ### shadcn/ui Token Mapping
 
 `components/ui/*` are generated shadcn/ui components and consume shadcn's own semantic tokens.
-Those tokens are declared once on `:root` in `globals.css` and **each one resolves to a Ghost AI
+Those tokens are declared once on `:root` in `globals.css` and **each one resolves to a System Builder
 token**, so no color value is duplicated and the components match the theme without being edited.
 
 | shadcn/ui token                           | Resolves to                         | Drives                             |

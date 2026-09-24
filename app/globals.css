@@ -3,14 +3,14 @@
 @import "shadcn/tailwind.css";
 
 /* ---------------------------------------------------------------------------
- * Ghost AI design tokens
+ * System Builder design tokens
  * Source of truth: context/ui-context.md
  *
  * Two token families live here:
- *   1. Ghost AI tokens  — --bg-*, --border-*, --text-*, --accent-*, --state-*
+ *   1. System Builder tokens  — --bg-*, --border-*, --text-*, --accent-*, --state-*
  *   2. shadcn/ui tokens — --background, --card, --primary, ... consumed by the
  *      generated components in components/ui/*.
- * The shadcn/ui tokens are defined in terms of the Ghost AI tokens, so the
+ * The shadcn/ui tokens are defined in terms of the System Builder tokens, so the
  * palette is declared in exactly one place.
  *
  * Colors are declared once as CSS custom properties and mapped to
@@ -35,6 +35,10 @@
   --bg-surface: #111114;
   --bg-elevated: #18181c;
   --bg-subtle: #1e1e23;
+  --bg-auth-panel: color-mix(in srgb, var(--text-primary) 5%, var(--bg-base));
+  --auth-warm: #ffb347;
+  --auth-orange: #e85d04;
+  --auth-ember: #8f2d00;
 
   /* Borders */
   --border-default: #2a2a30;
@@ -61,7 +65,7 @@
 
   /* ---- shadcn/ui semantic tokens ----------------------------------------
    * The generated components in components/ui/* consume these names. Each one
-   * resolves to a Ghost AI token above, so no color is declared twice.
+  * resolves to a System Builder token above, so no color is declared twice.
    * Only dark values exist: `:root` is the dark theme. */
   --background: var(--bg-base);
   --foreground: var(--text-primary);
@@ -120,6 +124,7 @@
   --color-surface: var(--bg-surface);
   --color-elevated: var(--bg-elevated);
   --color-subtle: var(--bg-subtle);
+  --color-auth-panel: var(--bg-auth-panel);
 
   /* Borders -> border-surface-border, border-surface-border-subtle */
   --color-surface-border: var(--border-default);
@@ -217,5 +222,13 @@
  * font size. Declaring `bg-base` directly keeps both utilities intact. */
 @utility bg-base {
   background-color: var(--bg-base);
+}
+
+@utility auth-brand-panel {
+  background:
+    radial-gradient(circle at 88% 86%, color-mix(in srgb, var(--auth-warm) 76%, transparent) 0%, transparent 28%),
+    radial-gradient(circle at 6% 18%, color-mix(in srgb, var(--auth-orange) 66%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 54% 55%, color-mix(in srgb, var(--auth-ember) 36%, transparent) 0%, transparent 38%),
+    linear-gradient(145deg, var(--auth-orange) 0%, var(--bg-base) 43%, var(--bg-base) 100%);
 }
 
