@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local project context
+/context/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
