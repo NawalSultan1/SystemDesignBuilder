@@ -1,3 +1,5 @@
+import { EditorShell } from "@/components/editor/editor-shell";
+
 export default function Home() {
-  return <div>Ghost AI</div>;
+  return <EditorShell />;
 }

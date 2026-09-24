@@ -61,6 +61,38 @@ Notes:
 - `color-scheme: dark` is set on `html` in `globals.css`, and `body` uses Geist Sans via
   `--font-geist-sans`.
 
+### shadcn/ui Token Mapping
+
+`components/ui/*` are generated shadcn/ui components and consume shadcn's own semantic tokens.
+Those tokens are declared once on `:root` in `globals.css` and **each one resolves to a Ghost AI
+token**, so no color value is duplicated and the components match the theme without being edited.
+
+| shadcn/ui token                           | Resolves to                         | Drives                             |
+| ----------------------------------------- | ----------------------------------- | ---------------------------------- |
+| `--background` / `--foreground`           | `--bg-base` / `--text-primary`      | Page shell and default text        |
+| `--card` / `--card-foreground`            | `--bg-surface` / `--text-primary`   | `Card` panels                      |
+| `--popover` / `--popover-foreground`      | `--bg-elevated` / `--text-primary`  | `Dialog` and other overlays        |
+| `--primary` / `--primary-foreground`      | `--accent-primary` / `--bg-base`    | Default `Button`, active states    |
+| `--secondary` / `--secondary-foreground`  | `--bg-subtle` / `--text-secondary`  | Secondary buttons                  |
+| `--muted` / `--muted-foreground`          | `--bg-elevated` / `--text-muted`    | Tab list, hover fills, helper text |
+| `--accent` / `--accent-foreground`        | `--bg-subtle` / `--text-primary`    | Hover and selected surfaces        |
+| `--destructive`                           | `--state-error`                     | Destructive actions, invalid input |
+| `--border` / `--input`                    | `--border-default`                  | Borders and field outlines         |
+| `--ring`                                  | `--accent-primary`                  | Focus rings                        |
+| `--chart-1` … `--chart-5`                 | Brand, AI and state hues            | Data series                        |
+| `--sidebar*`                              | `--bg-surface` family               | Sidebar surfaces                   |
+
+Dark mode is implicit. The app has no light mode, so `:root` carries the dark values, no `.dark`
+block exists, and the shadcn/ui `dark:` variant is re-scoped to the whole document in
+`globals.css`:
+
+```css
+@custom-variant dark (&:where(html, html *));
+```
+
+That keeps the `dark:` utilities the generated components ship working without a `.dark` ancestor
+or a theme provider. There is no toggle and no `prefers-color-scheme` handling.
+
 ## Typography
 
 | Role      | Font       | CSS Variable        |
@@ -74,11 +106,19 @@ Both fonts are loaded via `next/font/google` and applied as CSS variables on the
 
 Radius increases with surface depth — smaller for inner elements, larger for outer containers.
 
-| Context           | Class         |
-| ----------------- | ------------- |
-| Inline / small UI | `rounded-xl`  |
-| Cards / panels    | `rounded-2xl` |
-| Modal / overlay   | `rounded-3xl` |
+| Context           | Class         | Value  |
+| ----------------- | ------------- | ------ |
+| Inline / small UI | `rounded-xl`  | `12px` |
+| Cards / panels    | `rounded-2xl` | `16px` |
+| Modal / overlay   | `rounded-3xl` | `24px` |
+
+The `--radius-sm` … `--radius-3xl` tokens in `globals.css` are set to Tailwind's default values so
+these classes keep the sizes above. They must stay defined: generated components reference them,
+e.g. `rounded-[min(var(--radius-md),12px)]` in `components/ui/button.tsx`.
+
+Note: the generated `DialogContent` ships `rounded-xl` and must not be modified
+(`ai-workflow-rules.md` § Protected Foundation Components). App-level dialog wrappers pass
+`className="rounded-3xl"` to get the modal radius.
 
 ## Canvas
 
@@ -125,6 +165,15 @@ React Flow `<Background>` component. Canvas sits on the base background color.
 ## Component Library
 
 shadcn/ui on top of Tailwind. No custom design system. Components live in `components/ui/`. Use the `shadcn` CLI to add new components rather than writing them from scratch.
+
+Installed components: `Button`, `Card`, `Dialog`, `Input`, `Tabs`, `Textarea`, `ScrollArea`.
+
+- Configuration lives in `components.json` (`style: "radix-nova"`, `baseColor: "neutral"`,
+  `cssVariables: true`, `iconLibrary: "lucide"`, `ui: "@/components/ui"`).
+- `lib/utils.ts` re-exports `cn` from the `cn` package, which has `twMerge(clsx(...))` semantics —
+  use it to merge class names, including any `className` passed into a component.
+- `components/ui/*` are protected foundation components: they stay unmodified. Style at the call
+  site with `className` instead.
 
 ## Layout Patterns
 

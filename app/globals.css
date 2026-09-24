@@ -1,18 +1,33 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 /* ---------------------------------------------------------------------------
  * Ghost AI design tokens
  * Source of truth: context/ui-context.md
  *
- * Colors are declared once here as CSS custom properties and mapped to
+ * Two token families live here:
+ *   1. Ghost AI tokens  — --bg-*, --border-*, --text-*, --accent-*, --state-*
+ *   2. shadcn/ui tokens — --background, --card, --primary, ... consumed by the
+ *      generated components in components/ui/*.
+ * The shadcn/ui tokens are defined in terms of the Ghost AI tokens, so the
+ * palette is declared in exactly one place.
+ *
+ * Colors are declared once as CSS custom properties and mapped to
  * Tailwind utilities through `@theme inline`. Components must style through
  * the generated utility names (bg-base, text-copy-primary,
  * border-surface-border, text-brand, ...) — never raw color classes or hex
  * values.
  *
- * The workspace is dark only. There is no light mode and no
- * `prefers-color-scheme` switch.
+ * The workspace is dark only. There is no light mode, no `.dark` toggle, and
+ * no `prefers-color-scheme` switch: `:root` carries the dark values and the
+ * shadcn/ui `dark:` variant below is always active.
  * ------------------------------------------------------------------------ */
+
+/* shadcn/ui components ship `dark:` utilities (see components/ui/*). The app
+ * has no light mode, so the variant matches the whole document instead of
+ * waiting for a `.dark` ancestor that is never rendered. */
+@custom-variant dark (&:where(html, html *));
 
 :root {
   /* Surfaces */
@@ -43,6 +58,61 @@
   --state-error: #ff4d4f;
   --state-success: #34d399;
   --state-warning: #fbbf24;
+
+  /* ---- shadcn/ui semantic tokens ----------------------------------------
+   * The generated components in components/ui/* consume these names. Each one
+   * resolves to a Ghost AI token above, so no color is declared twice.
+   * Only dark values exist: `:root` is the dark theme. */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+
+  --popover: var(--bg-elevated);
+  --popover-foreground: var(--text-primary);
+
+  /* Primary action = brand cyan, with near-black text for contrast. */
+  --primary: var(--accent-primary);
+  --primary-foreground: var(--bg-base);
+
+  --secondary: var(--bg-subtle);
+  --secondary-foreground: var(--text-secondary);
+
+  /* Muted and accent are low-emphasis surfaces and hover states. */
+  --muted: var(--bg-elevated);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-subtle);
+  --accent-foreground: var(--text-primary);
+
+  --destructive: var(--state-error);
+
+  --border: var(--border-default);
+  --input: var(--border-default);
+  /* Focus rings use the brand accent so focus stays visible on any surface. */
+  --ring: var(--accent-primary);
+
+  /* Data series reuse the brand, AI and state hues. */
+  --chart-1: var(--accent-primary);
+  --chart-2: var(--accent-ai);
+  --chart-3: var(--state-success);
+  --chart-4: var(--state-warning);
+  --chart-5: var(--state-error);
+
+  /* Sidebar surfaces: ui-context.md § Layout Patterns describes sidebars as
+   * floating dark overlays with a subtle border. */
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-secondary);
+  --sidebar-primary: var(--accent-primary);
+  --sidebar-primary-foreground: var(--bg-base);
+  --sidebar-accent: var(--bg-subtle);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-default);
+  --sidebar-ring: var(--accent-primary);
+
+  /* Referenced directly by generated components, e.g.
+   * `rounded-[min(var(--radius-md),12px)]` in components/ui/button.tsx. */
+  --radius: 0.75rem;
 }
 
 @theme inline {
@@ -74,19 +144,70 @@
   --color-success: var(--state-success);
   --color-warning: var(--state-warning);
 
-  /* Typography -> font-sans, font-mono */
+  /* Typography -> font-sans, font-mono, font-heading. All three resolve to the
+   * Geist families loaded by next/font in app/layout.tsx. */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+  /* shadcn/ui colors -> bg-background, text-foreground, bg-card, bg-primary,
+   * bg-muted, border-border, ring-ring, ... */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  /* ui-context.md § Border Radius. Declared explicitly — rather than scaled off
+   * --radius — so rounded-xl/2xl/3xl keep Tailwind's 12/16/24px depth scale,
+   * while the --radius-* names generated components reference still resolve
+   * (`rounded-[min(var(--radius-md),12px)]` in components/ui/button.tsx).
+   * --radius-4xl is left to Tailwind's default; no component uses it. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
 }
 
 @layer base {
   html {
     color-scheme: dark;
+    @apply font-sans;
   }
 
   body {
     /* Geist Sans, loaded in app/layout.tsx through next/font. */
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    @apply bg-background text-foreground;
+  }
+  * {
+    @apply border-border outline-ring/50;
   }
 }
 

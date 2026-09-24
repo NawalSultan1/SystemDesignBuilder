@@ -23,9 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen flex items-center justify-center bg-base text-copy-primary">
-        {children}
-      </body>
+      <body className="min-h-dvh bg-base text-copy-primary">{children}</body>
     </html>
   );
 }
